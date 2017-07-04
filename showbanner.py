@@ -14,12 +14,13 @@ def showBanner(banner):
 def main():
 	for x in range(36,255):
 		ip = "192.168.50." + str(x)
-		for port in range(20,65535):
+		print '[*] ' + ip + ' :'
+		for port in range(1,65535):
 			banner = retBanner(ip, port)
 			if banner:
-				print '[+] ' + ip + ': ' + str(port) + 'y'
+				print '[+] ' + str(port) + ' y'
 				showBanner(banner)
 			#else:
-			#	print '[+] ' + ip + ': ' + str(port) + 'n'
+			#	print '[+] ' + str(port) + 'n'
 if __name__ == '__main__':
 	main()
