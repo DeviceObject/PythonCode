@@ -6,8 +6,6 @@ import ftplib
 buffer_size = 8192
 
 def entry():
-    if (len(sys.argv) < 3):
-        sys.exit()
     if (sys.argv[1] == "upload"):
         if (sys.argv[4] == "anonymous" or sys.argv[5] == "anonymous"):
             ftp = connectFTP(sys.argv[2],sys.argv[3],None,None)
@@ -31,27 +29,27 @@ def entry():
         if (ret == True):
             print('download file "%s" success' % filename)        
     else:
-        defaultAddress = input("input ftp address")
+        defaultAddress = input("input ftp address:")
         if (defaultAddress == None):
             sys.exit()
-        defaultPort = input("input ftp port")
+        defaultPort = input("input ftp port:")
         if (defaultPort == None):
             defaultPort = 21
-        defaultUser = input("input ftp user")
-        defaultPwd = input("input ftp password")
+        defaultUser = input("input ftp user:")
+        defaultPwd = input("input ftp password:")
         ftp = connectFTP(defaultAddress,defaultPort,defaultUser,defaultPwd)
         if (None == ftp):
             sys.exit()
         while True:
-            selecttype = input('input "upload" or "download" and "quit" terminate program')
+            selecttype = input('input "upload" or "download" and "quit" terminate program:')
             if (selecttype == "upload"):
-                filepath = input('input upload file path')
+                filepath = input('input upload file path:')
                 filename = os.path.split(filepath)[-1]
                 ret = uploadfiletoftp(ftp,filepath,filename)
                 if (ret == True):
                     print('upload file "%s" success' % filename)                
             elif (selecttype == "download"):
-                filepath = input('input download file path')
+                filepath = input('input download file path:')
                 filename = os.path.split(filepath)[-1]
                 ret = downloadfiletoftp(ftp,filename,filepath)
                 if (ret == True):
