@@ -98,10 +98,9 @@ def uploadfiletoftp(ftp,filepath,filename):
 def downloadfiletoftp(ftp,filename,savefilepath):
     if (savefilepath == None):
         return False
-    newfilepath = savefilepath + '\\' + filename
-    if (os.path.exists(newfilepath)):
-        os.unlink(newfilepath)  
-    fp = open(newfilepath,"wb").write
+    if (os.path.exists(savefilepath)):
+        os.unlink(savefilepath)  
+    fp = open(savefilepath,"wb").write
     try:
         ftp.retrbinary("RETR %s"%filename,fp,buffer_size)
         print('download file "%s" success' % filename)
