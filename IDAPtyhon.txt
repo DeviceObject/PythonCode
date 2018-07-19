@@ -1,0 +1,300 @@
+ea = idc.ScreenEA()	获取当前地址
+ea = here() 获取当前地址
+
+MinEA() 获取最小地址
+MaxEA() 获取最大地址
+
+idc.Exit(0) 结束脚本的执行
+
+idc.SegName(ea) 获取地址所在Section Name
+idc.GetDisasm(ea) 获取输入地址处的反汇编指令
+idc.GetMnem(ea) 获取所在地址处的操作符
+idc.GetOpnd(ea,0....1) 获取所在地址处的操作数
+idc.GetOpType(ea, n)来获取操作数，这个函数返回的一个opt.type类型的数值（int 类型），这个数值可表示的类型为寄存器，内存引用等等
+
+idaapi.BADADDR  == 0xFFFFFFFF
+idaapi.autoWait()  等待 IDA 分析完成
+
+
+idautils.Names()函数来获取在 IDA 中任何 API 和被重命名的 函数的相关信息，该函数将返回一个类型为(ea, str_name)的元组
+idautils.Segments()  返回一个可迭代的对象数
+idautils.Functions() 返回一个保存着已知函数首地址的数组
+idautils.Fucntions() 来获取所有已知的函数首地址 
+idautils.FuncItems(ea) 来获取该函数中所有指令地址的集合。 
+
+idc.SegName(seg) 地址所在段名
+idc.SegStart(seg) 获取段起始地址
+idc.SegEnd(seg)	获取段结束地址
+idc.NextSeg(ea)   获取当前地址所在段的下一个段地址
+idc.SegByName(segname)  通过名字得到一个段的起始地址
+
+idc.GetFunctionName(ea) 获取地址处的函数名称，这个地址可以是处于函数中的任意地址
+idc.NextFunction(ea) 获取地址处的下一个函数
+idc.PrevFunction(ea) 获取地址处的前一个函数
+idc.GetFunctionAttr(ea,FUNCATTR_START)
+idc.GetFunctionAttr(ea,FUNCATTR_END) 这两个函数配合获取一个函数的边界
+idc.NextHead(cur_addr, end)  获取下一条指令的地址
+idc.NextHead(ea) 获取下一条指令的地址
+idc.PrevHead(ea) 获取前一条指令的地址
+idc.NextAddr(ea) 获取下一个地址
+idc.PrevAddr(ea) 获取前一个地址
+idc.GetFunctionFlags (ea) 获取函数标志
+
+FUNC_NORET   这个标志表示某个函数是否有返回值，它本身的值是 1，下面是一个没有返回值的函数， 注意它没有函数的最后并不是 ret 或者 leave 指令 
+FUNC_FAR     这个标志非常少的出现，标志程序是否使用分段内存，它的值为 2
+FUNC_USERFAR 这个标志也非常少见，也很少有文档，HexRays 把它描述为“user has specified far-ness of the function”，它的值是 32. 
+FUNC_LIB     这个表示用于寻找库函数的代码。识别库函数代码是非常有必要的，因为我们在分析的 时候一般将其跳过，它的值是 4。下面的例子展示了如何使用这个标志。 
+FUNC_STATIC  这个标志作用在于识别该函数在编译的是否是一个静态函数。在c语言中静态函数被默认为是全局的。如果作者把这个函数定义为静态函数，那么这个函数在只能被本文件中的函 数访问。利用静态函数的判定我们可以更好的理解源代码的结构。 
+FUNC_FRAME   这个标志表示函数是否使用了 ebp 寄存器（帧指针），使用 ebp 寄存器的函数通常有如下的语法设定，目的是为了保存栈帧。
+.text:1A716697 push ebp
+.text:1A716698 mov ebp, esp
+.text:1A71669A sub esp, 5C
+FUNC_BOTTOMBP 和 FUNC_FRAME 一样，该标志用于跟踪帧指针（ebp）。它作用是识别函数中帧指针是否等于堆栈指针（esp） 
+FUNC_HIDDEN  带有 FUNC_HIDDEN 标志的函数意味着它们是隐藏的，这个函数需要展开才能查看。如果我们跳转到一个标记为 HIDDEN 的地址的话，它会自动的展开。 
+FUNC_THUNK   表示这个函数是否是一个 thunk 函数，thunk 函数表示的是一个简单的跳转函数。 
+.text:1A710606 Process32Next proc near
+.text:1A710606 jmp ds:__imp_Process32Next
+.text:1A710606 Process32Next endp 
+
+
+idc.LocByName(str) 该函数返回 API 的地址
+
+idc.FindBinary(ea,flag, searchstr, radix=16) 字节或者二进制的搜索
+idc.FindText(ea,flag, y, x, searchstr) 查找字符串
+idc.FindCode(ea, flag)  该函数用来寻找被标志为代码的下一个地址
+idc.FindData(ea, flag)  该函数和上一个函数 FindCode()差不多，除了它返回的是数据段的地址
+idc.FindUnexplored(ea, flag)  该功能用于查找 IDA 未识别为代码或数据的字节地址。未知类型需要通过观察或脚本 进一步手动分析。
+idc.FindExplored(ea, flag)   它用于查找 IDA 标识为代码或数据的地址。
+idc.FindImmediate(ea, flag, value)  相比于寻找一些类型，我们有些时候其实更希望能够找到特定的值，idc.FindImmediate 返回一个元组，元组的第一项为地址，第二项为标识是第几个操作数
+
+SEARCH_UP 和 SEARCH_DOWN 用来指明搜索的方向
+SEARCH_NEXT 用来获取下一个已经找到的对象
+SEARCH_CASE 用来指明是否区分大小写 
+SEARCH_NOSHOW 用来指明是否显示搜索的进度
+SEARCH_UNICODE 用于将所有搜索字符串视为 Unicode 
+
+
+idc.GetFlags(ea) 获取地址的内部标志
+idc.isCode(f)  判断 IDA 是否将其判定为代码。 
+idc.isData(f)  判断 IDA 是否将其判定为数据。 
+idc.isTail(f)  判断 IDA 是否将其判定为尾部。 
+idc.isUnknown(f)  判断 IDA 是否将其判定为未知，即既不是数据，也不是代码。 
+idc.isHead(f)  判断 IDA 是否将其判定为头部
+
+f 这个参数是新出现的，相比起于传递地址，我们还要先通过 idc.GetFlags(ea)获取地址的内 部标志表示，然后再传给 idc.is 系列函数当参数
+
+idc.SelStart()来获取选取的开始地址
+idc.SelEnd()  来获得选取的结束地址
+
+idc.MakeComm(ea,comment) 增加注释ea是要添加注释的地址
+idc.MakeRptCmt(ea, comment)来增 加重复性注释ea是要添加注释的地址
+idc.GetCommentEx(ea, repeatable)  获取一个注释，ea 是地址，重复性注释,repeatable 是 bool 值。
+idc.SetFunctionCmt(ea, cmt, repeatable) 注释函数
+idc.GetFunctionCmt(ea, repeatable) 获取函数的注,ea 可以是函数中的任何地 址，cmt 是我们要添加的注释
+
+idc.MakeName(ea, name) 重命名该地址 ，ea 是地址，name 是重命名的名称
+
+idc.Byte(ea) 获取ea地址处的一个BYTE
+idc.Word(ea) 获取ea地址处的一个WORD
+idc.Dword(ea) 获取ea地址处的一个DWORD
+idc.Qword(ea) 获取ea地址处的一个QWORD
+idc.GetFloat(ea)  获取ea地址处的一个Float
+idc.GetDouble(ea) 获取ea地址处的一个Double
+
+idc.GetManyBytes(ea, size, use_dbg=False) 获取某个地址开始的更多的字节。最后一个参数是可选的，用来指定是否正在调试内存
+
+idc.PatchByte(ea, value)
+idc.PatchWord(ea, value)
+idc.PatchDword(ea, value)
+
+
+for seg in idautils.Segments(): print idc.SegName(seg), idc.SegStart(seg), idc.SegEnd(seg) 遍历所有的段
+
+
+for func in idautils.Functions(): print hex(func), idc.GetFunctionName(func)  遍历所有段的所有函数
+
+ea = here()
+start = idc.GetFunctionAttr(ea,FUNCATTR_START)
+end = idc.GetFunctionAttr(ea,FUNCATTR_END)
+cur_addr = start
+while cur_addr <= end:
+	print hex(cur_addr),idc.GetDisasm(cur_addr)
+	cur_addr = idc.NextHead(cur_addr, end)                               获取指定地址处的所有汇编指令
+
+	
+
+	
+枚举所有函数的所有标志
+import idautils
+
+for func in idautils.Functions():
+	flags = idc.GetFunctionFlags(func)
+	if flags & FUNC_NORET:
+		print hex(func),"FUNC_NORET"
+	if flags & FUNC_FAR:
+		print hex(func),"FUNC_FAR"
+	if flags & FUNC_LIB:
+		print hex(func),"FUNC_LIB"
+	if flags & FUNC_STATIC:
+		print hex(func),"FUNC_STATIC"
+	if flags & FUNC_FRAME:
+		print hex(func),"FUNC_USERFAR"
+	if flags & FUNC_HIDDEN:
+		print hex(func),"FUNC_HIDDEN"
+	if flags & FUNC_THUNK:
+		print hex(func),"FUNC_THUNK"
+	if flags & FUNC_LIB:
+		print hex(func),"FUNC_BOTTOMBP"
+		
+for func in idautils.Functions():
+	flags = idc.GetFunctionFlags(func)
+	if flags & FUNC_LIB:
+		print hex(func),"FUNC_LIB",GetFunctionName(func)
+		
+dism_addr = list(idautils.FuncItems(here()))
+type(dism_addr)
+print dism_addr
+for line in dism_addr:
+	print hex(line),idc.GetDisasm(line)
+	
+for func in idautils.Functions():
+	flags = idc.GetFunctionFlags(func)
+	if flags & FUNC_LIB or flags & FUNC_THUNK:
+		continue
+	dism_addr = list(idautils.FuncItems(func))
+	for line in dism_addr:
+		m = idc.GetMnem(line)
+		if m == 'call' or m == 'jmp':
+			op = idc.GetOpType(line,0)
+			if op == o_reg:
+				print "0x%x %s"% (line,idc.GetDisasm(line))
+				
+ea = here()
+len(list(idautils.FuncItems(ea)))
+
+import idautils
+import idaapi
+
+displace = {}
+for func in idautils.Functions():
+	flags = idc.GetFunctionFlags(func)
+	if flags & FUNC_LIB or flags & FUNC_THUNK:
+		continue
+	dism_addr = list(idautils.FuncItems(func))
+	for current_addr in dism_addr:
+		op = None
+		index = None
+		idaapi.decode_insn(current_addr)
+		if idaapi.cmd.Op1.type == idaapi.o_displ:
+			op = 1
+		if idaapi.cmd.Op2.type == idaapi.o_displ:
+			op = 2
+		if op == None:
+			continue
+		if "bp" in idaapi.tag_remove(idaapi.ua_outop2(current_addr,0)) or \
+		"bp" in idaapi.tag_remove(idaapi.ua_outop2(current_addr,1)):
+			if op == 1:
+				index = (~(int(idaapi.cmd.Op1.addr) - 1) & 0xFFFFFFFF)
+			elif op == 2:
+				index = (~(int(idaapi.cmd.Op2.addr) - 1) & 0xFFFFFFFF)
+			else:
+				if op == 1:
+					index = int(idaapi.cmd.Op1.addr)
+				else:
+					index = int(idaapi.cmd.Op2.addr)
+			if index:
+				if displace.has_key(index) == False:
+					displace[index] = []
+				displace[index].append(current_addr)
+				
+min = MinEA()
+max = MaxEA()
+
+for func int idautils.Functions:
+	flags = idc.GetFunctionFlags(func)
+	if flags & FUNC_LIB or flags & FUNC_THUNK:
+		continue
+	dism_addr = list(idautils.FuncItems(func))
+	
+ea = 0x494132
+for addr in idautils.CodeRefsTo(ea,0):
+	print hex(addr),idc.GetDisasm(addr)
+	
+	
+pattern = '55 8B EC'
+addr = MinEA()
+for x in range(0,5):
+	addr = idc.FindBinary(addr,SEARCH_DOWN | SEARCH_NEXT,pattern)
+	if addr != idc.BADADDR:
+		print hex(addr),idc.GetDisasm(addr)
+		
+
+搜索特定字符串		
+pattern = '55 8B EC'
+minAddr = MinEA()
+maxAddr = MaxEA()
+count = 0
+currentAddr = minAddr
+while(currentAddr < maxAddr):
+	currentAddr = idc.FindBinary(currentAddr,SEARCH_DOWN | SEARCH_NEXT,pattern)
+	if currentAddr != idc.BADADDR:
+		count = count + 1
+		print hex(currentAddr),idc.GetDisasm(currentAddr),hex(count)
+		
+		
+currentAddr = MinEA()
+MaxAddr = MaxEA()
+while currentAddr < MaxAddr:
+	currentAddr = idc.FindText(currentAddr,SEARCH_DOWN,0,0,"thunks")
+	if currentAddr == idc.BADADDR:
+		break
+	else:
+		print hex(currentAddr),idc.GetDisasm(currentAddr)
+		currentAddr = idc.NextHead(currentAddr)
+		
+
+搜索特定数值		
+addr = MinEA()
+while True:
+	addr,operand = idc.FindImmediate(addr,SEARCH_DOWN | SEARCH_NEXT,0x7a)
+	if addr != idc.BADADDR:
+		print hex(addr),idc.GetDisasm(addr),"Operand",operand
+	else:
+		break
+		
+（用 XOR 清零寄存器）出现 的时候自动增加注释		
+for func in idautils.Functions():
+	flags = idc.GetFunctionFlags(func)
+	if flags & FUNC_LIB or flags & FUNC_THUNK:
+		continue
+	dism_addr = list(idautils.FuncItems(func))
+	for ea in dism_addr:
+		if idc.GetMnem(ea) == "xor":
+			if idc.GetOpnd(ea,0) == idc.GetOpnd(ea,1):
+				comment = "%s = 0" %(idc.GetOpnd(ea,0))
+				idc.MakeComm(ea,comment)
+
+异或解密并Patch原有数据				
+def xor(size, key, buff):
+	for index in range(0,size):
+		cur_addr = buff + index
+		temp = idc.Byte( cur_addr ) ^ key
+		idc.PatchByte(cur_addr, temp) 
+		
+Python>start = idc.SelStart()
+Python>end = idc.SelEnd()
+Python>print hex(start)
+0x1001ed3c
+Python>print hex(end)
+0x1001ed50
+
+Python>xor(end - start, 0x30, start)
+Python>idc.GetString(start) 
+				
+
+	
+
+	
+	
+	
+	
