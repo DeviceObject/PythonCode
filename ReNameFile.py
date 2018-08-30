@@ -82,7 +82,7 @@ def entry():
         print(sys.argv[1] + " copy " + newFile)
         filecrc32 = getFileCrc32(newFile)
         if filecrc32:
-            print(hex(filecrc32))
+            print(hex(filecrc32 & 0xffffffffL))
         filemd5 = getFileMd5(newFile)
         if filemd5:
             print("md5: " + filemd5)
