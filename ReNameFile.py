@@ -54,9 +54,13 @@ def entry():
         now = datetime.datetime.now()
         index = sys.argv[1].rfind('.')
         suffix = str(sys.argv[1])[index:]
+        timename = now.strftime('%Y-%m-%d-%H-%M-%S')
         if suffix in (".sys", ".Sys", ".SYS"):
             pdbpath = str(sys.argv[1])[0:index] + ".pdb"
             if os.path.isfile(pdbpath):
+                newpdb = sys.argv[2] + timename + ".pdb"
+                shutil.copy2(pdbpath, newpdb)
+                print("new pdb: " + newpdb)
                 if os.path.exists(r"D:\VMwareMachine\Windows7X86-LocalSym"):
                     shutil.copy2(pdbpath, r"D:\VMwareMachine\Windows7X86-LocalSym")
                 if os.path.exists(r"D:\VMwareMachine\Windows7X86-LocalSym"):
@@ -73,9 +77,9 @@ def entry():
                     shutil.copy2(pdbpath, r"D:\VMwareMachine\Windows10X86-LocalSym")
                 if os.path.exists(r"D:\VMwareMachine\Windows10X64-LocalSym"):
                     shutil.copy2(pdbpath, r"D:\VMwareMachine\Windows10X64-LocalSym")                 
-        newFile = sys.argv[2] + now.strftime('%Y-%m-%d-%H-%M-%S') + suffix
+        newFile = sys.argv[2] + timename + suffix
         shutil.copy2(sys.argv[1], newFile)
-        print(sys.argv[1] + " rename " + newFile)
+        print(sys.argv[1] + " copy " + newFile)
         filecrc32 = getFileCrc32(newFile)
         if filecrc32:
             print(hex(filecrc32))
