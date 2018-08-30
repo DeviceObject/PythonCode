@@ -5,6 +5,9 @@ import hashlib
 import zlib
 import os
 
+#parameter 1: need operate's file of abs path and has suffix
+#parameter 1: save file path
+
 def getFileCrc32(filename):
     if not os.path.isfile(filename):
         return
