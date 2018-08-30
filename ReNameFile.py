@@ -4,9 +4,33 @@ import shutil
 import hashlib
 import zlib
 import os
+import pefile
 
 #parameter 1: need operate's file of abs path and has suffix
 #parameter 1: save file path
+
+def getFileVersion(filename):
+    if not os.path.isfile(filename):
+        return
+    mype = pefile.PE(filename)
+    fileversion = ""
+    productversion = ""
+
+    if hasattr(mype, 'VS_VERSIONINFO'):
+        if hasattr(mype, 'FileInfo'):
+            for entry in mype.FileInfo:
+                if hasattr(entry, 'StringTable'):
+                    for st in entry.StringTable:
+                        for k, v in st.entries.items():
+                            if k == u"FileVersion":
+                                fileversion = v
+                            elif k == u"ProductVersion":
+                                productversion = v
+    if not fileversion:
+        fileversion = None
+    if not productversion:
+        productversion = None
+    return (fileversion, productversion)
 
 def getFileCrc32(filename):
     if not os.path.isfile(filename):
@@ -51,6 +75,7 @@ def getFileMd5(filename):
     return myhash.hexdigest()
 def entry():
     if len(sys.argv) == 3:
+        fileversion = getFileVersion(sys.argv[1])
         now = datetime.datetime.now()
         index = sys.argv[1].rfind('.')
         suffix = str(sys.argv[1])[index:]
