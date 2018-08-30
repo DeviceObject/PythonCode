@@ -63,26 +63,34 @@ def entry():
                 print("new pdb: " + newpdb)
                 if os.path.exists(r"D:\VMwareMachine\Windows7X86-LocalSym"):
                     shutil.copy2(pdbpath, r"D:\VMwareMachine\Windows7X86-LocalSym")
+                    print("copy pdb to windows 7 x86 symbols path")
                 if os.path.exists(r"D:\VMwareMachine\Windows7X86-LocalSym"):
                     shutil.copy2(pdbpath, r"D:\VMwareMachine\Windows7X64-LocalSym")
+                    print("copy pdb to windows 7 x64 symbols path")
                 if os.path.exists(r"D:\VMwareMachine\Windows8X86-LocalSym"):
                     shutil.copy2(pdbpath, r"D:\VMwareMachine\Windows8X86-LocalSym")
+                    print("copy pdb to windows 8 x86 symbols path")
                 if os.path.exists(r"D:\VMwareMachine\Windows8X64-LocalSym"):
                     shutil.copy2(pdbpath, r"D:\VMwareMachine\Windows8X64-LocalSym")
+                    print("copy pdb to windows 8 x64 symbols path")
                 if os.path.exists(r"D:\VMwareMachine\Windows8.1X86-LocalSym"):
                     shutil.copy2(pdbpath, r"D:\VMwareMachine\Windows8.1X86-LocalSym")
+                    print("copy pdb to windows 8.1 x86 symbols path")
                 if os.path.exists(r"D:\VMwareMachine\Windows8.1X64-LocalSym"):
                     shutil.copy2(pdbpath, r"D:\VMwareMachine\Windows8.1X64-LocalSym")
+                    print("copy pdb to windows 8.1 x64 symbols path")
                 if os.path.exists(r"D:\VMwareMachine\Windows10X86-LocalSym"):
                     shutil.copy2(pdbpath, r"D:\VMwareMachine\Windows10X86-LocalSym")
+                    print("copy pdb to windows 10 x86 symbols path")
                 if os.path.exists(r"D:\VMwareMachine\Windows10X64-LocalSym"):
-                    shutil.copy2(pdbpath, r"D:\VMwareMachine\Windows10X64-LocalSym")                 
+                    shutil.copy2(pdbpath, r"D:\VMwareMachine\Windows10X64-LocalSym")
+                    print("copy pdb to windows 10 x64 symbols path")
         newFile = sys.argv[2] + timename + suffix
         shutil.copy2(sys.argv[1], newFile)
         print(sys.argv[1] + " copy " + newFile)
         filecrc32 = getFileCrc32(newFile)
         if filecrc32:
-            print(hex(filecrc32 & 0xffffffffL))
+            print("crc32: " + hex(filecrc32 & 0xffffffffL))
         filemd5 = getFileMd5(newFile)
         if filemd5:
             print("md5: " + filemd5)
