@@ -73,8 +73,18 @@ def getFileMd5(filename):
         myhash.update(b)
     f.close()
     return myhash.hexdigest()
+def needCopyFile(absfilename, destfilepath, needfilename):
+    if os.path.exists(absfilename):
+        shutil.copy2(absfilename, destfilepath + "\\" + needfilename)
+        print("copy" + absfilename + " to " + destfilepath + "\\" + needfilename)
 def entry():
     if len(sys.argv) == 3:
+        if not os.path.exists(sys.argv[1]):
+            return
+        needCopyFile(sys.argv[1], sys.argv[2], "360entbw_x64_6.0.sys")
+        needCopyFile(sys.argv[1], sys.argv[2], "360entbw_x64_6.1.sys")
+        needCopyFile(sys.argv[1], sys.argv[2], "360entbw_x64_6.2.sys")
+        needCopyFile(sys.argv[1], sys.argv[2], "360entbw_x64_6.3.sys")
         fileversion = getFileVersion(sys.argv[1])
         now = datetime.datetime.now()
         index = sys.argv[1].rfind('.')
