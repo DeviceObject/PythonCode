@@ -100,6 +100,11 @@ def genMakeCabCmdLine(cabname, infpath, syspath):
     makeCmdLine += syspath
     makeCmdLine += "\r\n"
     return makeCmdLine
+def runMakeCat():
+    runCmdLine = "Inf2Cat.exe /driver:./ /os:Vista_X86,Vista_X64,7_X86,7_X64,Server2008_X64,Server2008_X86,"
+    runCmdLine2 = "Server2008R2_X64,Server8_X64,8_X86,8_X64,Server6_3_X64,6_3_X64,6_3_X86,Server10_X64,10_X64,10_X86,"
+    runCmdLine3 = "10_AU_X86,10_AU_X64,Server2016_X64,10_RS2_X86,10_RS2_X64,ServerRS2_X64"
+    os.system(runCmdLine + runCmdLine2 + runCmdLine3)
 def runMakeCabCmdLine(ddfname):
     runCmdLine = "makecab.exe /f " + ddfname + ".ddf"
     curwork = os.getcwd()
@@ -138,9 +143,9 @@ def genCabFile(sigfilename):
     if makeCmd:
         if writeFile(curworkdir + "\\" + sigfilename + ".ddf", makeCmd):
             cabfile = runMakeCabCmdLine(sigfilename)
-            if cabfile:
-                shutil.move(cabfile, g_project_work + "\\" + sigfilename + ".cab")
-                return g_project_work + "\\" + sigfilename + ".cab"
+            if cabfile and os.path.exists(cabfile):
+                os.remove(curworkdir + "\\" + sigfilename + ".ddf")
+                return cabfile
 
 def getFileSuffix(filename):
     index = filename.rfind('.')
@@ -148,7 +153,25 @@ def getFileSuffix(filename):
         return None
     suffix = filename[index + 1:]
     return suffix
-
+def getFileName(filepath):
+    index = filepath.rfind('.')
+    if index == -1:
+        return None
+    index2 = filepath.rfind('\\')
+    if index2 == -1:
+        name = filepath[0:index]
+    else:
+        name = filepath[index2 + 1:index]
+    return name
+def getLastFolderName(filename):
+    index = filename.rfind('\\')
+    if index == -1:
+        return None
+    index2 = filename[:index].rfind('\\')
+    if index2 == -1:
+        return None
+    folderName = filename[index2:index]
+    return folderName
 
 def genConfigInfo(filename, isEvSignature):
     sigCfgInfo = '[' + filename + ']' + "\r\n"
@@ -231,15 +254,15 @@ def checkFileIsExist(delayTimes, checkFileName):
             break
     return retValue
 
-def startFileSignature(sigfilename):
+def startFileSignature(sigfilename, fileSuffix):
     curworkdir = os.getcwd()
-    if os.path.exists(g_project_work + "\\" + sigfilename + ".cab"):
-        shutil.move(g_project_work + "\\" + sigfilename + ".cab", curworkdir + "\\" + sigfilename + ".cab")
-    sigConfigData = makeSignatureConfigFile(sigfilename + ".cab")
+    #if os.path.exists(g_project_work + "\\" + sigfilename + fileSuffix):
+    #    shutil.move(g_project_work + "\\" + sigfilename + fileSuffix, curworkdir + "\\" + sigfilename + fileSuffix)
+    sigConfigData = makeSignatureConfigFile(sigfilename + fileSuffix)
     if sigConfigData:
         if os.path.exists(g_local_signature_server_input):
-            shutil.copy2(curworkdir + "\\" + sigfilename + ".cab", g_local_signature_server_input + "\\" + sigfilename + ".cab")
-            print("copy file " + sigfilename + ".cab" +" to signature server")
+            shutil.copy2(curworkdir + "\\" + sigfilename + fileSuffix, g_local_signature_server_input + "\\" + sigfilename + fileSuffix)
+            print("copy file " + sigfilename + fileSuffix +" to signature server")
             genConfigFile(g_local_signature_config_filename, sigConfigData)
             print("gen " + g_local_signature_config_filename + " file success")
             print("clean Output directory files")
@@ -252,9 +275,9 @@ def startFileSignature(sigfilename):
             shutil.copy2(curworkdir + g_local_signature_success_filename, g_local_signature_server_input + g_local_signature_success_filename)
             print("copy upload.ok file to Input directory") 
             os.remove(curworkdir + g_local_signature_success_filename)
-            if checkFileIsExist(10, g_local_signature_server_output + "\\" + sigfilename + ".cab"):
-                shutil.copy2(g_local_signature_server_output + "\\" + sigfilename + ".cab", g_outputwork + "\\" + sigfilename + ".cab")
-                print(sigfilename + ".cab" + " signature success")
+            if checkFileIsExist(10, g_local_signature_server_output + "\\" + sigfilename + fileSuffix):
+                shutil.copy2(g_local_signature_server_output + "\\" + sigfilename + fileSuffix, curworkdir + "\\" + sigfilename + fileSuffix)
+                print(sigfilename + fileSuffix + " signature success")
                 return True
     return False
 
@@ -279,8 +302,37 @@ def genFileSumValue(filename):
         print("sha384: " + filesha384)
     filesha512 = getFileSha(filename,"sha512")
     if filesha512:
-        print("sha512: " + filesha512)  
-    
+        print("sha512: " + filesha512)
+
+def genCatFile():
+    runMakeCat()
+def startWork(subPath):
+    bret = False
+    curDir = os.getcwd()
+    listDir = os.listdir(curDir)
+    for i in range(1, len(listDir)):
+        filename = getFileName(listDir[i])
+        tmpFile = curDir + "\\" + filename
+        if not os.path.exists(tmpFile + ".inf"):
+            continue
+        if not os.path.exists(tmpFile + ".sys"):
+            continue
+        print("make cab file")
+        cabfile = genCabFile(filename)
+        print("gen " + cabfile)
+        if cabfile and os.path.exists(cabfile):
+            print("signature cab file")
+            bret = startFileSignature(filename, ".cab")
+            if bret == True:
+                genCatFile()
+                if os.path.exists(tmpFile + ".cat"):
+                    bret = startFileSignature(filename, ".cat")
+                    if bret == True:
+                        print("signed " + filename + ".cat" + " success")
+                    else:
+                        continue
+    return bret                
+
 if __name__ == "__main__":
     print("start work")
     g_project_work = os.getcwd()
@@ -296,20 +348,18 @@ if __name__ == "__main__":
     if not os.path.exists(g_outputwork):
         os.makedirs(g_outputwork)
         print("gen output file folder")
-    for i in range(1, len(sys.argv)):
-        os.chdir(g_inputwork)
-        print("make cab file")
-        cabfile = genCabFile(sys.argv[i])
-        print("gen " + cabfile)     
-        os.chdir(g_project_work)         
-        if cabfile:
-            os.chdir(g_cachework)
-            print("signature cab file")
-            success = startFileSignature(sys.argv[i])
-            os.chdir(g_project_work)                   
-            if success == True:
-                print("signature success")
-                os.remove(g_cachework + sys.argv[i] + ".cab")
-                genFileSumValue(g_outputwork + sys.argv[i] + ".cab")
+    listDir = os.listdir(g_inputwork)
+    for i in range (0, len(listDir)):
+        folderName = listDir[i]
+        subDir = g_inputwork + "\\" + folderName
+        sublistDir = os.listdir(subDir)
+        for j in range (0, len(sublistDir)):
+            subPath = sublistDir[j]
+            suffix = getFileSuffix(subPath)
+            if suffix == "inf":
+                continue
+            shutil.copy2(g_inputwork + "\\" + folderName + "\\" + subPath, g_outputwork + "\\" + folderName + "." + suffix)
+            print("copy file " + g_inputwork + "\\" + folderName + "\\" + subPath + " to " + g_outputwork + "\\" + folderName + "." + suffix)
+    print("work success")
 
 
