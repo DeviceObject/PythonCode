@@ -15,8 +15,15 @@ g_local_signature_filename = []
 
 g_project_work = ""
 g_inputwork = ""
-g_cachework = ""
+g_userwork = ""
 g_outputwork = ""
+
+g_isSigSys = False
+g_isSigCab = False
+g_isSigCat = False
+
+g_isDefault = False
+g_DefaultSigName = "DefaultName"
 
 
 class SignatureFileInfo:
@@ -306,17 +313,36 @@ def genFileSumValue(filename):
 
 def genCatFile():
     runMakeCat()
-def startWork(subPath):
+def startWork(sigName, isSigSys, isSigCat, isSigCab):
     bret = False
     curDir = os.getcwd()
     listDir = os.listdir(curDir)
-    for i in range(1, len(listDir)):
+    for i in range(0, len(listDir)):
         filename = getFileName(listDir[i])
         tmpFile = curDir + "\\" + filename
         if not os.path.exists(tmpFile + ".inf"):
-            continue
+            print("isn't has inf file")
+            break
         if not os.path.exists(tmpFile + ".sys"):
-            continue
+            print("isn't has sys file")
+            break
+        fileSuffix = getFileSuffix(listDir[i])
+        if fileSuffix == "inf":
+            infName = getFileName(listDir[i])
+            print("inf name: " + infName)
+        elif fileSuffix == "sys":
+            drvName = getFileName(listDir[i])
+            print("drv name: " + drvName)
+        else:
+            print(listDir[i])
+    if infName != drvName:
+        print("error： inf name isn't equal drv name")
+        return bret
+    if isSigSys == True:
+        bret = startFileSignature(filename, ".sys")
+        if bret == True:
+            print("signature Sys file success")
+    if isSigCab == True:
         print("make cab file")
         cabfile = genCabFile(filename)
         print("gen " + cabfile)
@@ -324,15 +350,33 @@ def startWork(subPath):
             print("signature cab file")
             bret = startFileSignature(filename, ".cab")
             if bret == True:
-                genCatFile()
-                if os.path.exists(tmpFile + ".cat"):
-                    bret = startFileSignature(filename, ".cat")
-                    if bret == True:
-                        print("signed " + filename + ".cat" + " success")
-                    else:
-                        continue
+                print("signature cab file success")
+    if isSigCat == True:   
+        genCatFile()
+        if os.path.exists(tmpFile + ".cat"):
+            bret = startFileSignature(filename, ".cat")
+            if bret == True:
+                print("signed " + filename + ".cat" + " success")
     return bret                
 
+def isGenSigCatFile():
+    binput = input("is gen cat file: ")
+    if binput == 'Y' or binput == 'y':
+        return True
+    else:
+        False
+def isGenSigCabFile():
+    binput = input("is gen cab file: ")
+    if binput == 'Y' or binput == 'y':
+        return True
+    else:
+        False
+def isSigSysFile():
+    binput = input("is gen Sys file: ")
+    if binput == 'Y' or binput == 'y':
+        return True
+    else:
+        False 
 if __name__ == "__main__":
     print("start work")
     g_project_work = os.getcwd()
@@ -340,14 +384,41 @@ if __name__ == "__main__":
     if not os.path.exists(g_inputwork):
         print("input directory isn't exist")
         exit(0)
-    g_cachework = g_project_work + "\\cache\\"
-    if not os.path.exists(g_cachework):
-        os.makedirs(g_cachework)
-        print("gen cache file folder")
+    g_userwork = g_project_work + "\\user\\"
+    if not os.path.exists(g_userwork):
+        os.makedirs(g_userwork)
+        print("gen user file folder")
     g_outputwork = g_project_work + "\\output\\"
     if not os.path.exists(g_outputwork):
         os.makedirs(g_outputwork)
         print("gen output file folder")
+    if g_isDefault == False:
+        sigName = input("input Signature Name: ")
+        if sigName == None:
+            print("sigName is null")
+            exit(0)
+    else:
+        sigName = g_DefaultSigName
+    listDir = os.listdir(g_userwork)
+    for i in range(0, len(listDir)):
+        filename = getFileName(listDir[i])
+        if not os.path.exists(g_inputwork + filename):
+            os.mkdir(g_inputwork + filename)
+        filesuffix = getFileSuffix(listDir[i])
+        if filename and filesuffix:
+            shutil.copy2(g_userwork + listDir[i], g_inputwork + filename + "\\" + sigName + "." + filesuffix)
+    if g_isDefault == False:
+        g_isSigSys = isSigSysFile()
+        g_isSigCab = isGenSigCabFile()
+        g_isSigCat = isGenSigCatFile()
+    else:
+        g_isSigCab = True
+    listDir = os.listdir(g_inputwork)
+    for i in range(0, len(listDir)):
+        filepath = g_inputwork + "\\" + listDir[i]
+        if os.path.isdir(filepath):
+            os.chdir(filepath)
+            startWork(filepath, g_isSigSys, g_isSigCat, g_isSigCab)
     listDir = os.listdir(g_inputwork)
     for i in range (0, len(listDir)):
         folderName = listDir[i]
