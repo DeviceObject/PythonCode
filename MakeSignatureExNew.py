@@ -379,6 +379,13 @@ def isSigSysFile():
         False 
 if __name__ == "__main__":
     print("start work")
+    global g_project_work
+    global g_inputwork
+    global g_userwork
+    global g_outputwork
+    global g_isSigSys
+    global g_isSigCab
+    global g_isSigCat
     sigName = ""
     g_project_work = os.getcwd()
     g_inputwork = g_project_work + "\\input\\"
