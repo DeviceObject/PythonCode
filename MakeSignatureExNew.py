@@ -336,7 +336,7 @@ def startWork(sigName, isSigSys, isSigCat, isSigCab):
         else:
             print(listDir[i])
     if infName != drvName:
-        print("error： inf name isn't equal drv name")
+        print("error: inf name isn't equal drv name")
         return bret
     if isSigSys == True:
         bret = startFileSignature(filename, ".sys")
@@ -379,6 +379,7 @@ def isSigSysFile():
         False 
 if __name__ == "__main__":
     print("start work")
+    sigName = ""
     g_project_work = os.getcwd()
     g_inputwork = g_project_work + "\\input\\"
     if not os.path.exists(g_inputwork):
@@ -393,10 +394,10 @@ if __name__ == "__main__":
         os.makedirs(g_outputwork)
         print("gen output file folder")
     if g_isDefault == False:
-        sigName = input("input Signature Name: ")
-        if sigName == None:
+        try:
+            sigName = input("input Signature Name: ")
+        except Exception as ex:
             print("sigName is null")
-            exit(0)
     else:
         sigName = g_DefaultSigName
     listDir = os.listdir(g_userwork)
