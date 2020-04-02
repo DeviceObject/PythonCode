@@ -9,9 +9,22 @@ import requests
 import zipfile
 from xlutils.copy import copy
 
+g_dict_cve_cwe = {}
+    
+def collect_cwe_info_from_directory(in_directory, key_words):
+    for filename in os.listdir(in_directory):
+        if not filename.endswith(key_words):
+            continue
+        file_path = os.path.join(in_directory, filename)
+        if collect_info_from_json_field(file_path) == False:
+            print("collect " + file_path + "cwe info failed")
+
 def collect_info_from_json_field(input_json_file):
+    cve_id = ""
+    cwe_id = ""
+    global g_dict_cve_cwe
     if not os.path.exists(input_json_file):
-        return
+        return False
     with open(input_json_file, 'r', encoding='utf-8') as file_json:
         file_data = file_json.read()
     file_json.close()
@@ -21,13 +34,30 @@ def collect_info_from_json_field(input_json_file):
             for i in range(len(item[1])):
                 for sub_item in item[1][i].items():
                     if sub_item[0] == "cve":
-                        for third_item in sub_item[1]:
-                            if third_item[0] == "CVE_data_meta":
-                                print(third_item[1])
+                        for third_item in sub_item[1].items():
+                            if third_item[0] == "CVE_data_meta" or third_item[0] == "problemtype":
+                                for fifth_item in third_item[1].items():
+                                    if fifth_item[0] == "ID":
+                                        cve_id = fifth_item[1]
+                                    if fifth_item[0] == "problemtype_data":
+                                        for sixth_item in fifth_item[1]:
+                                            for seventh_item in sixth_item.items():
+                                                if seventh_item[0] == "description":
+                                                    for eighth_item in seventh_item[1]:
+                                                        for ninth_item in eighth_item.items():
+                                                            if ninth_item[0] == "value":
+                                                                cwe_id = ninth_item[1]
+                        print(cve_id + " " + cwe_id)
+                        dict_item = {cve_id:cwe_id}
+                        g_dict_cve_cwe.update(dict_item)
+    print("scan " + input_json_file + "complete")
+    return True
 def extract_all_file(origal_directory):
-    file_list = os.listdir()
+    file_list = os.listdir(origal_directory)
     for findfile in file_list:
         cur_file = os.path.join(origal_directory, findfile)
+        if not cur_file.endswith(".zip"):
+            continue
         extract_file(cur_file, origal_directory, "")
 def extract_file(origal_file, dest_directory, password):
     if not os.path.exists(origal_file):
@@ -161,20 +191,39 @@ def fetch_cve_number(input_json_file, output_file):
                             cve_list = []
                             cve_list = search_signature(origal_rule, "reference:cve,", ";")
                             cve_name = ""
+                            cwe_list = []
+                            cve_name_info = ""
                             for cve_item in cve_list:
-                                cve_name = cve_name + "CVE-" + cve_item + " "
+                                cve_name = "CVE-" + cve_item
+                                if cve_name_info == "":
+                                    cve_name_info = cve_name_info + "CVE-" + cve_item
+                                else:
+                                    cve_name_info = cve_name_info + "," + "CVE-" + cve_item
+                                cwe_name = g_dict_cve_cwe.get(cve_name)
+                                cwe_list.append(cwe_name)
                         elif fourth_item[0] == "desc_zh":
                             rule_desc = fourth_item[1]
                         elif fourth_item[0] == "rule_id":
                             rule_id = fourth_item[1]
-                        else:
+                        #else:
                             #print(str(fourth_item[0]) + " " + str(fourth_item[1]))
-                            cwe_name = ""
-                            bid_name = ""
+                    bid_name = ""
                     write_data = []
-                    write_data.append(rule_id)
-                    write_data.append(cve_name)
-                    write_data.append(cwe_name)
+                    write_data.append("qianxin-" + rule_id)
+                    write_data.append(cve_name_info)
+                    cwe_name_info = ""
+                    for cwe_item in cwe_list:
+                        if cwe_item == "NVD-CWE-Other":
+                            continue
+                        if cwe_item == "NVD-CWE-noinfo":
+                            continue
+                        if cwe_item == None:
+                            continue
+                        if cwe_name_info == "":
+                            cwe_name_info = cwe_name_info + cwe_item
+                        else:
+                            cwe_name_info = cwe_name_info + "," + cwe_item
+                    write_data.append(cwe_name_info)
                     write_data.append(bid_name)
                     write_data.append(rule_desc)
                     write_excel(output_file, write_data)
@@ -182,8 +231,10 @@ def fetch_cve_number(input_json_file, output_file):
                     #print(rule_info)
     return True
 if __name__ == "__main__":
-    #downloadfile()
-    collect_info_from_json_field("D:\\MyCodeLibrary\\mycode\\PythonCode\\cache1\\nvdcve-1.1-2020.json\\nvdcve-1.1-2020.json")
-    fetch_file_from_url("https://nvd.nist.gov/vuln/data-feeds#JSON_FEED", ".zip", os.path.join(os.getcwd(), "cache1"))
-    extract_all_file(os.path.join(os.getcwd(), "cache1"))
+    cache_path = os.path.join(os.getcwd(), "cache1")
+    #fetch_file_from_url("https://nvd.nist.gov/vuln/data-feeds#JSON_FEED", ".zip", cache_path)
+    #extract_all_file(cache_path)
+    collect_cwe_info_from_directory(cache_path, "json")
+    print(len(g_dict_cve_cwe))
     fetch_cve_number(os.sys.argv[1], os.path.join(os.getcwd(), "New_Output.xls"))
+    print("complete")
