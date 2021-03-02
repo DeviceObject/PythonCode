@@ -2,9 +2,33 @@ import os
 import time
 import argparse
 import threading
+import subprocess
 
-#list_system_stat = []
 g_exitFlag = 0
+
+class RunExeThread (threading.Thread):
+    def __init__(self, name, exename, cmd, num):
+        threading.Thread.__init__(self)
+        self.name = name
+        self.exename = exename
+        self.cmd = cmd
+        self.num = num
+    def run(self):
+        #count = 0
+        print("thread " + self.name + " run " + self.exename + " " + self.cmd + " " + str(self.num))
+        cmd = "./" + self.exename + " " + self.cmd + " " + str(self.num)
+        run_cmd_line(cmd)
+        #while True:
+            #if g_exitFlag:
+            #    threadName.exit()
+            #if count < self.num:
+            #    cmd = self.exename + " " + self.cmd + " " + str(count)
+            #    run_cmd_line(cmd)
+            #else:
+            #    break
+            #count = count + 1
+            #time.sleep(self.delay)
+        print("thread " + self.name + " exit")
 class MonSysThread (threading.Thread):
     def __init__(self, name, filename, cpu, mem, diskio, delay):
         threading.Thread.__init__(self)
@@ -15,9 +39,9 @@ class MonSysThread (threading.Thread):
         self.diskio = diskio
         self.delay = delay
     def run(self):
-        print("start thread: " + self.name)
+        print("thread " + self.name + " " + self.filename)
         collect(self.name, self.filename, self.cpu, self.mem, self.diskio, self.delay)
-        print("thread: " + self.name + " exit")
+        print("thread " + self.name + " exit") 
 def collect(threadName, filename, cpu, mem, diskio, delay):
     count = 0
     list_monitor_status = []
@@ -153,13 +177,39 @@ def parse_cmd_line():
     parser.add_argument('-m', dest = 'monitor_memory', metavar = 'memory status', default = True, type = bool, help = 'system memory status')
     parser.add_argument('-c', dest = 'monitor_cpu', metavar = 'cpu status', default = True, type = bool, help = 'system cpu status')
     parser.add_argument('-d', dest = 'monitor_diskio', metavar = 'diskio status', default = True, type = bool, help = 'system diskio status')
+    parser.add_argument('-r', dest = 'run_mode', metavar = 'run mode', default = "test", help = 'maybe set test and monitor mode')
+    parser.add_argument('-t', dest = 'test_file', metavar = 'test program', default = "SSK_PROC_TEST.out", help = 'test program file name')
+    parser.add_argument('-n', dest = 'run_num', metavar = 'run program num', default = 400, help = 'run program num')
     args = parser.parse_args()
-    parser.print_help()
-    return args.monitor_file, args.monitor_cpu, args.monitor_memory, args.monitor_diskio
+    if args.run_mode == 'test':
+        return args.run_num, args.test_file, args.run_mode, args.monitor_file, args.monitor_cpu, args.monitor_memory, args.monitor_diskio
+    elif args.run_mode == 'monitor':
+        return args.run_num, args.test_file, args.run_mode, args.monitor_file, args.monitor_cpu, args.monitor_memory, args.monitor_diskio
+    else:
+        parser.print_help()
+        return None
 if __name__ == "__main__":
-    monitor_file, cpu, memory, diskio = parse_cmd_line()
-    monitor_file = monitor_file.strip()
-    print("collect system status info")
-    monitor_system_thread = MonSysThread("MonSysThread", monitor_file, cpu, memory, diskio, 0.1)
-    monitor_system_thread.start()
-    monitor_system_thread.join()
+    run_num, test_file, run_mode, monitor_file, cpu, memory, diskio = parse_cmd_line()
+    if run_mode == 'test':
+        print("test run mode")
+        monitor_file = str(monitor_file).strip()
+        monitor_system_thread = MonSysThread("MonSysThread", monitor_file, cpu, memory, diskio, 0.1)
+        monitor_system_thread.start()
+        
+        for i in range(0, run_num):
+            thread_name = "RunExeThread " + str(i);
+            run_exe_thread = RunExeThread(thread_name, test_file, '1234567899099987888192999900asdfasdfasdfasdfasdfasdfadfasdfadfadf', i)
+            run_exe_thread.start()
+            print('thread_name start success')
+            #run_exe_thread.join()
+        monitor_system_thread.join()
+        print('complete test mode')
+    elif run_mode == 'monitor':
+        monitor_file = monitor_file.strip()
+        print("monitor run mode")
+        monitor_system_thread = MonSysThread("MonSysThread", monitor_file, cpu, memory, diskio, 0.1)
+        monitor_system_thread.start()
+        monitor_system_thread.join()
+        print('complete monitor mode')
+    else:
+        print("unknow run mode")
