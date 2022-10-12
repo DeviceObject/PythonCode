@@ -1,7 +1,21 @@
 #!/usr/bin/python
+# -*- coding: UTF-8 -*-
+
 import os
 import sys
 
+video_list = []
+
+def constructVideoInfo(name, path, length):
+    video_dict = {}
+    video_dict.setdefault('name', '')
+    video_dict.setdefault('path', '')
+    video_dict.setdefault('length', 0)
+    
+    video_dict['name'] = name
+    video_dict['path'] = path
+    video_dict['length'] = length
+    return video_dict
 def renameDirFiles(path, is_left, sub_name):
     print("argv[1]: " + path)
     print("argv[2]: " + sub_name)
@@ -56,6 +70,9 @@ def renameDirFiles(path, is_left, sub_name):
             print("rename " + file + " to " + new_name)
     return count
 def main():
+    global video_list
+    videoInfo = constructVideoInfo('test', 'test', 1234)
+    video_list.append(videoInfo)
     count = renameDirFiles(sys.argv[1], True, sys.argv[2])
     print("rename total: " + str(count))
     return
