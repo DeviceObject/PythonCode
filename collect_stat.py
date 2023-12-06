@@ -124,6 +124,8 @@ def parse_proc_stat(index_nums, stat_buf, proc_name, list_proc_stat):
     " mid: " + str(mem_mid) + " min: " + str(mem_min)
     #" Mem max: " + str(mem_max) +  + " cur: " + mem_stat
     print(info)
+    with open(proc_name + '_stat.txt', 'w', encoding='utf-8') as f:
+        f.write(info)
     return info
 def thread_task_top(threadName, delay):
     list_agent_main_stat = []
