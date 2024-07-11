@@ -8,15 +8,17 @@ import shutil
 
 elf_file_list = []
 
-def constructElfListInfo(name, path, length):
+def constructElfListInfo(name, path, length, info):
     elf_file_list = {}
     elf_file_list.setdefault('name', '')
     elf_file_list.setdefault('path', '')
-    elf_file_list.setdefault('length', 0)
+    elf_file_list.setdefault('info', '')
+    elf_file_list.setdefault('len', 0)
     
     elf_file_list['name'] = name
     elf_file_list['path'] = path
-    elf_file_list['length'] = length
+    elf_file_list['info'] = info
+    elf_file_list['len'] = length
     return elf_file_list
 def zip_decompression(zip_full_path, dest_full_path, password):
     print("decompression file: " + zip_full_path)
@@ -41,9 +43,9 @@ def is_elf_file(path):
 def copy_file(src, dst):
     try:
         shutil.copyfile(src, dst)
-        print("copy " + src + " to " + dst + "success.")
+        #print("copy " + src + " to " + dst + " success.")
     except IOError as e:
-        print("copy " + src + " to " + dst + "failed.")
+        print("copy " + src + " to " + dst + " failed.")
         print(e)
 def create_dir(dir):
     ret_val = False
@@ -81,7 +83,9 @@ def searchElfFiles(path, list_elf_files):
         if is_elf == False:
             continue
         file_stat = os.stat(full_path)
-        list_elf = constructElfListInfo(full_path[full_path.rfind("/") + 1:], full_path, file_stat.st_size)
+        info = get_elf_file_info(full_path)
+        name = path[path.rfind('/') + 1:]
+        list_elf = constructElfListInfo(name, full_path, file_stat.st_size, info)
         list_elf_files.append(list_elf)
 def get_elf_file_info(path):
     cmd = "file " + path
@@ -95,14 +99,12 @@ def main():
     searchElfFiles(sys.argv[1], elf_file_list)
     for elf_file in elf_file_list:
         print(str(elf_file))
-        copy_file(str(elf_file['path']), out_dir + str(elf_file['name']))
+        print("")
+        tmp_path = str(elf_file['path'])
+        dst_file = out_dir + tmp_path[tmp_path.rfind('/') + 1:]
+        copy_file(str(elf_file['path']), dst_file)
     elf_file_num = len(elf_file_list)
     print("found elf ransomware num: " + str(elf_file_num))
-    file_list = os.listdir(out_dir)
-    for file in file_list:
-        full_path = os.path.join(out_dir, file)
-        info = get_elf_file_info(full_path)
-        print(info)
     return
 if __name__ == "__main__":
     main()
